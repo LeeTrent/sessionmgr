@@ -1,8 +1,6 @@
 package sessionmgr
 
 import (
-	"errors"
-	"fmt"
 	"github.com/satori/go.uuid"
 )
 
@@ -11,26 +9,23 @@ type Session struct {
 }
 
 type SessionMgr struct {
-	sMap map[string]string // Session ID, User Name
+	sMap map[string]Session // Session ID, User Name
 }
 
 func NewSessionMgr() *SessionMgr {
 	sm := SessionMgr{
-		sMap: make(map[string]string),
+		sMap: make(map[string]Session),
 	}
 	return &sm
 }
 
 func (sm *SessionMgr) GetUserName(sessionId string) string {
-	return sm.sMap[sessionId]
+	return sm.sMap[sessionId].UserName
 }
 
-func (sm *SessionMgr) GetSession(sessionId string) (Session, error) {
-	if userName, ok := sm.sMap[sessionId]; ok {
-		return Session{sessionId, userName}, nil
-	}
-	errMsg := fmt.Sprintf("Session for Session ID '%s' NOT FOUND", sessionId)
-	return Session{}, errors.New(errMsg)
+func (sm *SessionMgr) GetSession(sessionId string) (Session, bool) {
+	session, found := sm.sMap[sessionId]
+	return session, found
 }
 
 func (sm *SessionMgr) RemoveSession(sessionId string) {
@@ -39,8 +34,8 @@ func (sm *SessionMgr) RemoveSession(sessionId string) {
 
 func (sm *SessionMgr) CreateSession(userName string) Session {
 	sessionId := uuid.NewV4().String()
-	sm.sMap[sessionId] = userName
-	return Session{sessionId, userName}
+	sm.sMap[sessionId] = Session{sessionId, userName}
+	return sm.sMap[sessionId]
 }
 
 func (sm *SessionMgr) CreateSessionId() string {
